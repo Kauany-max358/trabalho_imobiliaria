@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imobiliária R.M - Gerador de Orçamento</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <h1>Gerador de Orçamento R.M</h1>
+
+    <form method="POST">
+        <label for="tipo">Tipo de Imóvel:</label>
+        <select name="tipo" id="tipo" onchange="ajustarLimites()" required>
+            <option value="Apartamento">Apartamento (R$ 700)</option>
+            <option value="Casa">Casa (R$ 900)</option>
+            <option value="Estudio">Estúdio (R$ 1.200)</option>
+        </select>
+
+        <label for="quartos">Quantidade de Quartos:</label>
+        <input type="number" name="quartos" id="quartos" min="1" max="2" value="1">
+
+        <label for="vagas">Vagas de Garagem:</label>
+        <input type="number" name="vagas" id="vagas" min="0" value="0" required>
+
+        <label for="criancas" id="label-criancas">Possui crianças?</label>
+        <select name="criancas" id="criancas">
+            <option value="Sim">Sim</option>
+            <option value="Não">Não (Desconto de 5% em Apto)</option>
+        </select>
+
+        <label for="parcelas">Parcelar contrato (R$ 2.000) em quantas vezes?</label>
+        <input type="number" name="parcelas" id="parcelas" min="1" max="5" value="1" required>
+
+        <button type="submit">Gerar Orçamento</button>
+    </form>
+
+    {% if resultado %}
+    <div class="resultado">
+        <h2>Resultado do Orçamento:</h2>
+        <p>Valor Mensal do Aluguel: <strong>R$ {{ "%.2f"|format(aluguel) }}</strong></p>
+        <p>Parcela do Contrato ({{ parcelas }}x): <strong>R$ {{ "%.2f"|format(contrato) }}</strong></p>
+        <hr>
+        <p><strong>Total Mensal: R$ {{ "%.2f"|format(total) }}</strong></p>
+        <p>✅ Arquivo .csv gerado com as 12 parcelas!</p>
+    </div>
+    {% endif %}
+
+    <script>
+        function ajustarLimites() {
+            const tipo = document.getElementById("tipo").value;
+            const campoQuartos = document.getElementById("quartos");
+            const campoCriancas = document.getElementById("criancas");
+            const labelCriancas = document.getElementById("label-criancas");
+
+            if (tipo === "Estudio") {
+                // Estúdio não tem quartos nem regra de crianças no enunciado
+                campoQuartos.value = 0;
+                campoQuartos.disabled = true;
+                campoCriancas.disabled = true;
+                campoCriancas.style.backgroundColor = "#e9e9e9";
+                campoQuartos.style.backgroundColor = "#e9e9e9";
+            } else if (tipo === "Casa") {
+                // Casa tem quartos, mas não tem desconto de crianças
+                campoQuartos.disabled = false;
+                campoQuartos.style.backgroundColor = "#fff";
+                campoCriancas.disabled = true;
+                campoCriancas.value = "Sim"; // Garante que não aplique desconto indevido
+                campoCriancas.style.backgroundColor = "#e9e9e9";
+            } else {
+                // Apartamento libera todos os campos
+                campoQuartos.disabled = false;
+                campoCriancas.disabled = false;
+                campoQuartos.style.backgroundColor = "#fff";
+                campoCriancas.style.backgroundColor = "#fff";
+            }
+        }
+        // Executa ao carregar para o estado inicial estar correto
+        window.onload = ajustarLimites;
+    </script>
+
+</body>
+</html>
